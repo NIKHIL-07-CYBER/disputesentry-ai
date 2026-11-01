@@ -1,0 +1,11 @@
+id: DSP001
+good:
+  outcome: verified
+  http_status: 200
+  dispatched: true
+bad:
+  outcome: rejected
+  http_status: 400
+  error_code: INVALID_SIGNATURE
+  dispatched: false
+notes: In test harness with mock PayPal cert, good verifies against test RSA public key.

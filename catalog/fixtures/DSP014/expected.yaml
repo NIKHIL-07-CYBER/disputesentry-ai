@@ -1,0 +1,12 @@
+id: DSP014
+good:
+  validation: valid
+  api_path: /v1/customer/disputes/PP-D-1014/provide-evidence
+  http_method: POST
+  expected_paypal_status: 200
+  new_state: EVIDENCE_SUBMITTED
+bad:
+  validation: invalid
+  validation_error: MISSING_CARRIER_OR_TRACKING
+  blocked_before_dispatch: true
+notes: Carrier and tracking number are compulsory when evidence_type is PROOF_OF_FULFILLMENT.

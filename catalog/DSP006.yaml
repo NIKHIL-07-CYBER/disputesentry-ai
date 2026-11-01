@@ -1,0 +1,22 @@
+id: DSP006
+title: Match dispute to internal merchant fulfillment record
+summary: Query internal merchant datastore using transaction_id or invoice_id to assemble order, tracking, and delivery details.
+kind: behavior
+applies_when:
+  - Dispute payload contains disputed_transactions array with valid transaction_id or invoice_number
+  - Merchant database contains matching order record
+expected:
+  outcome: Order record, carrier info, shipment status, tracking number, and customer message log are returned in a structured MerchantEvidencePackage.
+severity_default: warning
+correct_alternative:
+  - Extract primary transaction_id from dispute resource
+  - Query merchant store for corresponding fulfillment records
+  - Populate evidence context model; if record missing, mark evidence status as RECORD_NOT_FOUND
+false_positive_notes: May return RECORD_NOT_FOUND if transaction took place on an external unlinked sales channel or transaction ID was recorded under a child billing agreement.
+sources:
+  - url: https://developer.paypal.com/platforms/disputes/handle-disputes/use-disputes-api
+    section: Disputed transactions schema
+  - url: https://www.paypal.com/us/webapps/mpp/ua/seller-protection
+    section: Merchant record keeping obligations
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP006/

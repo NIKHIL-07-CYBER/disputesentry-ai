@@ -1,0 +1,19 @@
+{
+  "headers": {
+    "PAYPAL-AUTH-ALGO": "SHA256withRSA",
+    "PAYPAL-CERT-URL": "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-360CAA83-FCA2A303-A2D576F0",
+    "PAYPAL-TRANSMISSION-ID": "test-transmission-001",
+    "PAYPAL-TRANSMISSION-SIG": "dGhpcy1pcy1hLXZhbGlkLXNpZ25hdHVyZQ==",
+    "PAYPAL-TRANSMISSION-TIME": "2026-10-31T12:00:00Z"
+  },
+  "body": {
+    "id": "WH-EV-001",
+    "event_type": "CUSTOMER.DISPUTE.CREATED",
+    "create_time": "2026-10-31T12:00:00Z",
+    "resource": {
+      "dispute_id": "PP-D-1001",
+      "status": "WAITING_FOR_SELLER_RESPONSE",
+      "dispute_amount": {"currency": "USD", "value": "45.00"}
+    }
+  }
+}

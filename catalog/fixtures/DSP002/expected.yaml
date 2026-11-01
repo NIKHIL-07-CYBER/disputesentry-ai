@@ -1,0 +1,9 @@
+id: DSP002
+good:
+  outcome: verified
+  http_status: 200
+bad:
+  outcome: rejected
+  http_status: 400
+  error_code: INVALID_SIGNATURE
+notes: Tampering with dispute_amount in body invalidates SHA256 digest, resulting in verification failure.

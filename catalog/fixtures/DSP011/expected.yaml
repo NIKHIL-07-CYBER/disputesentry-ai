@@ -1,0 +1,10 @@
+id: DSP011
+good:
+  expected_value: 119.50
+  recommended_action: CONTEST
+  rationale: Positive expected net recovery ($119.50) strongly favors representment.
+bad:
+  expected_value: -15.50
+  recommended_action: CONCEDE
+  rationale: Negative expected net recovery (-$15.50) means contesting will lose more in fees than accepting.
+notes: Formula is EV = (P_win * Amount) - ((1 - P_win) * Fee) - Overhead.

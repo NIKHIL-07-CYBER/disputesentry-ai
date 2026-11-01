@@ -1,0 +1,22 @@
+id: DSP002
+title: Reject tampered or invalid webhook signature
+summary: Immediately reject forged or tampered webhook events with HTTP 400 Bad Request to prevent unauthorized dispute execution.
+kind: endpoint
+applies_when:
+  - Inbound HTTP POST request arrives at /webhooks/paypal
+  - Request body bytes have been altered or PAYPAL-TRANSMISSION-SIG does not decrypt to the computed hash
+expected:
+  outcome: Request is rejected with HTTP 400 Bad Request; error response specifies INVALID_SIGNATURE; no dispute state changes occur.
+severity_default: error
+correct_alternative:
+  - Intercept corrupted signature during verification phase
+  - Log transmission ID and remote IP address to security audit trail
+  - Return HTTP 400 Bad Request with JSON error code INVALID_SIGNATURE
+false_positive_notes: If a reverse proxy decodes and re-encodes JSON or strips whitespace from the body before signature verification, valid PayPal signatures will appear invalid.
+sources:
+  - url: https://docs.paypal.ai/reference/api/rest/verify-webhook-signature/verify-webhook-signature
+    section: Signature verification failure semantics
+  - url: https://developer.paypal.com/api/rest/webhooks/rest
+    section: Webhook security best practices
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP002/

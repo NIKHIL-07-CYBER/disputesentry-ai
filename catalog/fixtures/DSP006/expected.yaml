@@ -1,0 +1,11 @@
+id: DSP006
+good:
+  record_found: true
+  order_id: ORD-1006
+  carrier: USPS
+  tracking_number: "9400100000000000000001"
+  outcome: evidence_compiled
+bad:
+  record_found: false
+  outcome: RECORD_NOT_FOUND
+notes: If record is not found in store, evidence matcher returns explicit RECORD_NOT_FOUND status.

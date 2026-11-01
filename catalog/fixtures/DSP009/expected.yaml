@@ -1,0 +1,12 @@
+id: DSP009
+good:
+  evidence_type: PROOF_OF_REFUND
+  win_probability: 0.95
+  recommended_action: CONTEST
+  evidence_notes: Merchant already issued full refund under transaction REFUND-554433.
+bad:
+  evidence_type: NONE
+  win_probability: 0.20
+  recommended_action: CONCEDE
+  notes: Merchant admits defective goods without prior return arrangement; concede is economically optimal.
+notes: SNAD disputes require proof of refund, replacement, or buyer agreement.

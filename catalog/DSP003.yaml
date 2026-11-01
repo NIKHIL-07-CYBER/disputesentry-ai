@@ -1,0 +1,22 @@
+id: DSP003
+title: Deduplicate redelivered webhook events
+summary: Ignore duplicate webhook deliveries sharing the same PAYPAL-TRANSMISSION-ID to guarantee idempotent dispute processing.
+kind: behavior
+applies_when:
+  - Inbound webhook has a valid cryptographic signature
+  - PAYPAL-TRANSMISSION-ID matches an existing record in the webhook_events table
+expected:
+  outcome: Request returns HTTP 200 OK with status duplicate_ignored; no duplicate evaluation or PayPal API dispatch is triggered.
+severity_default: info
+correct_alternative:
+  - Check incoming PAYPAL-TRANSMISSION-ID against local indexed store
+  - If record exists, log duplicate receipt event
+  - Return HTTP 200 OK immediately without queuing duplicate background jobs
+false_positive_notes: Will trigger intentionally during standard PayPal webhook retry cycles (exponential backoff after temporary merchant downtime).
+sources:
+  - url: https://developer.paypal.com/api/rest/webhooks/rest
+    section: Event delivery and retries
+  - url: https://docs.paypal.ai/reference/webhook-events/disputes-v1
+    section: Webhook idempotency and event handling
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP003/

@@ -1,0 +1,11 @@
+id: DSP008
+good:
+  seller_protection_eligible: true
+  win_probability: 0.85
+  recommended_action: CONTEST
+bad:
+  seller_protection_eligible: false
+  win_probability: 0.05
+  recommended_action: CONCEDE
+  notes: Shipping after receiving notice of unauthorized payment voids Seller Protection.
+notes: Timely dispatch prior to unauthorized notification is required under PayPal terms.

@@ -1,0 +1,22 @@
+id: DSP005
+title: Validate allowed dispute action links before API dispatch
+summary: Ensure target dispute resource contains the requisite HATEOAS action link before calling provide-evidence or accept-claim.
+kind: contract
+applies_when:
+  - Dispute details have been retrieved via GET /v1/customer/disputes/{dispute_id}
+  - System or operator attempts an action (e.g. provide_evidence or accept_claim)
+expected:
+  outcome: If action rel is present in dispute links, allow execution; if absent, reject call locally with ACTION_NOT_PERMITTED without hitting PayPal API.
+severity_default: error
+correct_alternative:
+  - Inspect dispute.links array for matching rel (e.g. provide_evidence or accept_claim)
+  - If rel is missing, return error ACTION_NOT_PERMITTED and log current dispute status
+  - Prompt operator that dispute stage does not permit the requested action
+false_positive_notes: May fire if dispute lifecycle stage progressed concurrently on PayPal (e.g. transitioned to UNDER_REVIEW while local draft was being prepared).
+sources:
+  - url: https://developer.paypal.com/platforms/disputes/handle-disputes/use-disputes-api
+    section: HATEOAS links and allowed actions
+  - url: https://docs.paypal.ai/reference/api/rest/disputes-actions/provide-evidence.md
+    section: Prerequisites for submitting evidence
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP005/

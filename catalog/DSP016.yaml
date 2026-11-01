@@ -1,0 +1,22 @@
+id: DSP016
+title: Enforce evidence attachment file size limits
+summary: Validate evidence files so that individual files do not exceed 10 MB and total multipart payload does not exceed 50 MB before calling PayPal API.
+kind: rule
+applies_when:
+  - Evidence package contains file attachments (receipts, delivery signature images, damage photos)
+  - An individual file size is > 10,485,760 bytes (10 MB) OR total cumulative size > 52,428,800 bytes (50 MB)
+expected:
+  outcome: Submission is halted prior to network dispatch; returns error PAYLOAD_TOO_LARGE; prompts merchant operator to compress files.
+severity_default: error
+correct_alternative:
+  - Inspect byte size of each file attachment in evidence package
+  - If any file > 10 MB or total > 50 MB, return PAYLOAD_TOO_LARGE
+  - Log warning with oversized file names
+false_positive_notes: None; 10 MB individual / 50 MB cumulative are hard limits enforced by PayPal infrastructure.
+sources:
+  - url: https://docs.paypal.ai/growth/disputes/reference/supported-file-types-sizes.md
+    section: File size limits for evidence uploads
+  - url: https://developer.paypal.com/platforms/disputes/handle-disputes/use-disputes-api
+    section: Multipart upload restrictions
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP016/

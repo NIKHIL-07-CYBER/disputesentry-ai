@@ -1,0 +1,3 @@
+{
+  "sql_command": "UPDATE audit_log SET new_state = 'CONCEDED' WHERE dispute_id = 'PP-D-1022';"
+}

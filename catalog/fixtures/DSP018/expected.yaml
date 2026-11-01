@@ -1,0 +1,11 @@
+id: DSP018
+good:
+  state: PENDING_APPROVAL
+  action_taken: none
+  alert_level: normal
+bad:
+  state: SAFETY_FALLBACK_TRIGGERED
+  action_taken: submit_evidence
+  alert_level: CRITICAL
+  reason: DEADLINE_IMMINENT_PREVENT_DEFAULT_LOSS
+notes: When < 2h remain on high-value dispute with valid delivery proof, auto-submit defense to prevent forfeiture.

@@ -1,0 +1,24 @@
+id: DSP014
+title: Execute provide-evidence API call with tracking details
+summary: Submit tracking information and carrier proof to PayPal Disputes provide-evidence endpoint when contesting an INR or unauthorized claim.
+kind: endpoint
+applies_when:
+  - Dispute has been approved for contest (automatically or via human operator)
+  - Dispute links contains provide_evidence rel
+  - Merchant evidence includes valid carrier and tracking_number
+expected:
+  outcome: Submits POST /v1/customer/disputes/{dispute_id}/provide-evidence; PayPal returns HTTP 200 OK; local dispute state updates to EVIDENCE_SUBMITTED.
+severity_default: error
+correct_alternative:
+  - Construct payload with evidence_type: PROOF_OF_FULFILLMENT, carrier_name, tracking_number, and merchant notes
+  - Submit POST request with valid OAuth2 bearer token
+  - If successful, record submission timestamp and PayPal response payload
+  - If PayPal returns 4xx/5xx, transition state to SUBMISSION_FAILED and log error
+false_positive_notes: Will fail with 400 Bad Request if carrier name is not recognized or tracking number does not conform to carrier checksum format.
+sources:
+  - url: https://docs.paypal.ai/reference/api/rest/disputes-actions/provide-evidence.md
+    section: Provide evidence request structure and parameters
+  - url: https://developer.paypal.com/platforms/disputes/handle-disputes/use-disputes-api
+    section: Submitting proof of fulfillment
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP014/

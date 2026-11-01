@@ -1,0 +1,22 @@
+id: DSP004
+title: Validate webhook certificate URL host domain
+summary: Ensure PAYPAL-CERT-URL points exclusively to an official PayPal domain to prevent Server-Side Request Forgery (SSRF).
+kind: rule
+applies_when:
+  - Inbound webhook headers specify PAYPAL-CERT-URL
+  - Hostname in the certificate URL does not end with paypal.com or is an unauthorized IP address
+expected:
+  outcome: Certificate retrieval is aborted; request is rejected with HTTP 400 Bad Request and error code UNTRUSTED_CERT_URL.
+severity_default: error
+correct_alternative:
+  - Parse certificate URL hostname
+  - Validate hostname matches regex ^https://api(-m)?\.sandbox\.paypal\.com/ or ^https://api(-m)?\.paypal\.com/
+  - Reject untrusted URLs before initiating outbound network fetch
+false_positive_notes: None; PayPal certificate distributions originate strictly from authorized paypal.com domains.
+sources:
+  - url: https://docs.paypal.ai/reference/api/rest/verify-webhook-signature/verify-webhook-signature
+    section: Certificate download security requirements
+  - url: https://developer.paypal.com/api/rest/webhooks/rest
+    section: Validating certificate sources
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP004/

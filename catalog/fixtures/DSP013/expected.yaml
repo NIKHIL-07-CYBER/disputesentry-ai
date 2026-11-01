@@ -1,0 +1,10 @@
+id: DSP013
+good:
+  requires_human_approval: false
+  decision_state: AUTO_EXECUTING
+  trigger_reason: null
+bad:
+  requires_human_approval: true
+  decision_state: PENDING_APPROVAL
+  trigger_reason: AMOUNT_EXCEEDS_THRESHOLD
+notes: Default threshold is $100.00 USD. Any dispute >= $100 must halt for human review.

@@ -1,0 +1,10 @@
+id: DSP003
+good:
+  outcome: processed
+  http_status: 200
+  duplicate: false
+bad:
+  outcome: duplicate_ignored
+  http_status: 200
+  duplicate: true
+notes: Both return HTTP 200 to acknowledge webhook delivery, but duplicate suppresses downstream processing.

@@ -1,0 +1,9 @@
+{
+  "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
+  "dispute_amount": {"currency": "USD", "value": "75.00"},
+  "evidence": {
+    "prior_refund_issued": false,
+    "item_damaged_in_transit_acknowledged": true,
+    "merchant_return_policy_signed": false
+  }
+}

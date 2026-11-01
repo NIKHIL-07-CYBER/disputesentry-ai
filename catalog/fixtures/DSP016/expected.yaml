@@ -1,0 +1,12 @@
+id: DSP016
+good:
+  validation: valid
+  total_size_bytes: 3145728
+  outcome: upload_permitted
+bad:
+  validation: invalid
+  outcome: rejected_locally
+  error_code: PAYLOAD_TOO_LARGE
+  oversized_files:
+    - huge_uncompressed_scan.pdf (15.0 MB exceeds 10 MB limit)
+notes: Hard limits enforced by PayPal are 10 MB per file, 50 MB total.

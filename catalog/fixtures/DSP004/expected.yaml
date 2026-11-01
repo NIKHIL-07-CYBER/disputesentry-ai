@@ -1,0 +1,9 @@
+id: DSP004
+good:
+  outcome: trusted_cert_domain
+  valid: true
+bad:
+  outcome: rejected_untrusted_domain
+  valid: false
+  error_code: UNTRUSTED_CERT_URL
+notes: Strictly whitelist ^https://api(-m)?\.(sandbox\.)?paypal\.com/

@@ -1,0 +1,23 @@
+id: DSP021
+title: Compute win rate and net recovery metrics across dispute lifecycle
+summary: Aggregate and report both raw win rate and net financial recovery dollars to measure true dispute program performance.
+kind: metric
+applies_when:
+  - Disputes conclude with resolved events (CUSTOMER.DISPUTE.RESOLVED) or local resolution state
+  - Metrics endpoint GET /api/v1/metrics or dashboard view is requested
+expected:
+  outcome: Compute win_rate = (won_count / total_concluded); compute net_recovery = sum(won_dispute_amounts) - sum(dispute_fees_paid); display both on merchant dashboard.
+severity_default: info
+correct_alternative:
+  - Query resolved disputes from database
+  - Sum recovered amounts for disputes won under Seller Protection
+  - Deduct dispute fees incurred on lost disputes
+  - Return JSON metrics payload with win_rate, total_recovered_usd, and fees_avoided_usd
+false_positive_notes: Metric calculations will show 0% win rate until at least one dispute has officially completed PayPal dispute review and received a RESOLVED event.
+sources:
+  - url: https://www.versapay.com/resources/two-dispute-management-kpis-chargeback-strategy
+    section: Measuring net recovery vs raw win rates
+  - url: https://docs.paypal.ai/reference/webhook-events/disputes-v1
+    section: CUSTOMER.DISPUTE.RESOLVED event structure
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP021/

@@ -1,0 +1,10 @@
+{
+  "reason": "UNAUTHORISED",
+  "dispute_create_time": "2026-10-28T14:00:00Z",
+  "evidence": {
+    "carrier": "FedEx",
+    "tracking_number": "794644792180",
+    "shipment_timestamp": "2026-10-29T11:00:00Z",
+    "shipping_address_matches_paypal": true
+  }
+}

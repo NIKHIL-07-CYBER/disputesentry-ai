@@ -1,0 +1,24 @@
+id: DSP011
+title: Calculate Net Expected Recovery ROI for contest vs concede decision
+summary: Calculate Expected Value taking into account win probability, dispute amount, dispute fees, and evidence overhead.
+kind: rule
+applies_when:
+  - Dispute has valid amount value and currency
+  - Estimated win probability P_win has been computed (0.0 to 1.0)
+  - Dispute fee is defined ($15 standard or $20 chargeback)
+expected:
+  outcome: Compute EV = (P_win * amount) - ((1 - P_win) * fee) - overhead; recommend CONTEST if EV > 0; recommend CONCEDE if EV <= 0.
+severity_default: error
+correct_alternative:
+  - Retrieve dispute_amount from dispute resource
+  - Determine applicable fee: $20.00 for CHARGEBACK stage, $15.00 for CLAIM stage
+  - Calculate net recovery EV
+  - If EV > 0, set recommended_action to CONTEST; otherwise set to CONCEDE
+false_positive_notes: If merchant qualifies for Seller Protection fee reimbursement, fee penalty may be reduced; defaults to conservative non-reimbursed assumption.
+sources:
+  - url: https://www.versapay.com/resources/two-dispute-management-kpis-chargeback-strategy
+    section: Net recovery vs raw win rate calculation
+  - url: https://www.chargebackgurus.com/blog/a-merchants-guide-to-paypal-credit-card-chargebacks
+    section: Dispute and chargeback fee schedules
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP011/

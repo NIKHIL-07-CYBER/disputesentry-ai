@@ -1,0 +1,22 @@
+id: DSP015
+title: Execute accept-claim API call when conceding dispute
+summary: Submit claim acceptance to PayPal Disputes accept-claim endpoint when concession is decided or approved.
+kind: endpoint
+applies_when:
+  - Dispute has been approved for concession (automatically or via human operator)
+  - Dispute links contains accept_claim rel
+expected:
+  outcome: Submits POST /v1/customer/disputes/{dispute_id}/accept-claim with note; PayPal returns HTTP 200 OK; dispute lifecycle closes in buyer favor; state updates to CLAIM_ACCEPTED.
+severity_default: error
+correct_alternative:
+  - Construct payload with note explaining concession
+  - Submit POST request to accept-claim endpoint
+  - Record concession in audit log and update merchant financial liability records
+false_positive_notes: Will return 409 Conflict if dispute was already resolved, canceled, or closed by PayPal risk operations.
+sources:
+  - url: https://docs.paypal.ai/reference/api/rest/disputes-actions/accept-claim.md
+    section: Accept claim API specification
+  - url: https://developer.paypal.com/platforms/disputes/handle-disputes/use-disputes-api
+    section: Conceding disputes
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP015/

@@ -1,0 +1,10 @@
+{
+  "reason": "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED",
+  "dispute_amount": {"currency": "USD", "value": "75.00"},
+  "evidence": {
+    "prior_refund_issued": true,
+    "refund_transaction_id": "REFUND-554433",
+    "refund_amount": "75.00",
+    "customer_comms_present": true
+  }
+}

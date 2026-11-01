@@ -1,0 +1,24 @@
+id: DSP012
+title: Dispatch inquiry communication in INQUIRY lifecycle stage
+summary: Send clarification message to buyer via send-message API when dispute is in INQUIRY stage before escalating to a formal claim.
+kind: behavior
+applies_when:
+  - Dispute lifecycle stage is INQUIRY
+  - Dispute links array contains send_message rel
+  - Merchant evidence includes customer order tracking or customer service resolution details
+expected:
+  outcome: Calls POST /v1/customer/disputes/{dispute_id}/send-message with professional clarification note; updates local status to INQUIRY_SENT.
+severity_default: info
+correct_alternative:
+  - Draft polite status inquiry referencing tracking carrier and delivery date
+  - Ensure message does not admit liability or contain card data
+  - Call PayPal send-message endpoint
+  - Log communication in dispute audit trail
+false_positive_notes: If dispute was escalated directly to a CHARGEBACK by buyer bank, INQUIRY stage is bypassed.
+sources:
+  - url: https://developer.paypal.com/platforms/disputes/handle-disputes/use-disputes-api
+    section: Communicating with customers during inquiry stage
+  - url: https://docs.paypal.ai/reference/api/rest/disputes-actions/send-message.md
+    section: Send message API specification
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP012/

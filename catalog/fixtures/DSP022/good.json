@@ -1,0 +1,12 @@
+{
+  "event_type": "STATE_TRANSITION",
+  "dispute_id": "PP-D-1022",
+  "previous_state": "PENDING_APPROVAL",
+  "new_state": "APPROVED",
+  "actor_id": "operator_sarah",
+  "timestamp": "2026-11-01T10:15:00Z",
+  "payload_metadata": {
+    "action": "CONTEST",
+    "notes": "Verified USPS delivery receipt"
+  }
+}

@@ -1,0 +1,12 @@
+id: DSP007
+good:
+  seller_protection_eligible: true
+  win_probability: 0.90
+  recommended_action: CONTEST
+  evidence_type: PROOF_OF_FULFILLMENT
+bad:
+  seller_protection_eligible: false
+  win_probability: 0.10
+  recommended_action: CONCEDE
+  notes: Unshipped/pre-shipment orders fail Seller Protection for INR.
+notes: Delivery to correct destination prior to dispute opening is required by PayPal Seller Protection.

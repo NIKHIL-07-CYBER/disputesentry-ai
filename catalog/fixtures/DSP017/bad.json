@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "filename": "payload_script.sh",
+      "mime_type": "application/x-sh"
+    },
+    {
+      "filename": "archive.zip",
+      "mime_type": "application/zip"
+    }
+  ]
+}

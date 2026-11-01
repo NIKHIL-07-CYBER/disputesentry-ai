@@ -1,0 +1,24 @@
+id: DSP018
+title: Safeguard pending approvals approaching response deadline
+summary: Escalate alerts and trigger fallback safety action when a dispute in PENDING_APPROVAL approaches within 24 hours of seller_response_due_date.
+kind: behavior
+applies_when:
+  - Dispute decision_state is PENDING_APPROVAL
+  - Difference between seller_response_due_date and current timestamp is <= 24 hours
+  - No human operator approval or rejection has been submitted
+expected:
+  outcome: System emits high-priority DEADLINE_APPROACHING alert; if remaining time drops below 2 hours, triggers preconfigured fail-safe action (e.g. submit available delivery proof to prevent default loss).
+severity_default: error
+correct_alternative:
+  - Periodically monitor active disputes in PENDING_APPROVAL
+  - Flag disputes approaching deadline threshold in operator dashboard
+  - If approval deadline expires, execute conservative action (submit evidence if delivery proof exists; concede if no proof exists)
+  - Log automated fallback execution in audit log
+false_positive_notes: Does not apply to disputes in INQUIRY stage where seller_response_due_date is absent or flexible.
+sources:
+  - url: https://dzone.com/articles/human-in-the-loop-approval-enterprise-ai-agents
+    section: Timeout handling in human approval gates
+  - url: https://www.chargeback.io/blog/paypal-chargeback-time-limits-guide
+    section: Default loss rules on missed deadlines
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP018/

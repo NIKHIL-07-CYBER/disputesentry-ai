@@ -1,0 +1,23 @@
+id: DSP019
+title: Redact Primary Account Numbers and card data from dispute records
+summary: Sanitize customer dispute comments, evidence notes, and logs to scrub Luhn-valid 13-19 digit card numbers in compliance with PCI DSS.
+kind: rule
+applies_when:
+  - Input text from dispute comments, customer messages, or internal merchant notes contains strings matching credit card patterns
+  - Sequence passes Luhn checksum algorithm (13 to 19 digits)
+expected:
+  outcome: Card number sequence is replaced with [REDACTED_PAN] before database storage, LLM prompt construction, or log output.
+severity_default: error
+correct_alternative:
+  - Scan all text fields using Luhn-checking regex pattern
+  - Replace validated PAN matches with [REDACTED_PAN]
+  - Strip CVV/CVC codes (3-4 digit numbers adjacent to card patterns)
+  - Ensure sanitized text is used across database and external API requests
+false_positive_notes: May redact 16-digit order IDs or tracking numbers if they accidentally pass the Luhn checksum; merchant order schemas should prefix identifiers to prevent collisions.
+sources:
+  - url: https://gravitee.io/corpus/gen-1318/merchant-account-provider/pci-dss-compliance-considerations-for-llm-enabled-payment-flows-and-merchant-account-integrations.html
+    section: PCI DSS Requirement 3.4 for LLM payment integrations
+  - url: https://www.pcisecuritystandards.org/
+    section: Protecting stored cardholder data
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP019/

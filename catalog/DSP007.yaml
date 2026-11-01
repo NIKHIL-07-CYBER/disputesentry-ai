@@ -1,0 +1,23 @@
+id: DSP007
+title: Validate Seller Protection for Item Not Received claims
+summary: Verify carrier online tracking and delivery status match transaction shipping address for MERCHANDISE_OR_SERVICE_NOT_RECEIVED claims.
+kind: rule
+applies_when:
+  - Dispute reason is MERCHANDISE_OR_SERVICE_NOT_RECEIVED
+  - Merchant evidence includes carrier name, tracking number, and online status
+expected:
+  outcome: If tracking indicates DELIVERED to recipient city/state/zip prior to dispute creation, classify Seller Protection as ELIGIBLE with high win probability; otherwise INELIGIBLE.
+severity_default: error
+correct_alternative:
+  - Check carrier status equals DELIVERED
+  - Check delivery address matches transaction shipping destination
+  - Ensure delivery timestamp is prior to dispute open timestamp
+  - Package PROOF_OF_FULFILLMENT evidence
+false_positive_notes: May be marked ineligible if shipping carrier does not provide online tracking status or if package was delivered to a collection point.
+sources:
+  - url: https://www.paypal.com/us/webapps/mpp/ua/seller-protection
+    section: Proof of delivery requirements for physical goods
+  - url: https://docs.paypal.ai/growth/disputes/reference/dispute-reasons.md
+    section: Evidence for Item Not Received disputes
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP007/

@@ -1,0 +1,12 @@
+id: DSP017
+good:
+  validation: valid
+  outcome: formats_accepted
+bad:
+  validation: invalid
+  outcome: rejected_locally
+  error_code: UNSUPPORTED_FILE_TYPE
+  disallowed_files:
+    - payload_script.sh (application/x-sh)
+    - archive.zip (application/zip)
+notes: Only JPG, JPEG, GIF, PNG, and PDF are supported by PayPal Disputes API.

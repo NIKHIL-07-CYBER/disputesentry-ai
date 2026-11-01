@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "filename": "invoice_scan.png",
+      "mime_type": "image/png"
+    },
+    {
+      "filename": "postal_receipt.pdf",
+      "mime_type": "application/pdf"
+    }
+  ]
+}

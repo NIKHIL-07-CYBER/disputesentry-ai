@@ -1,0 +1,9 @@
+id: DSP019
+good:
+  sanitized: false
+  output_text: "I placed order ORD-1234 on Oct 20 for two pairs of shoes, but only one pair arrived."
+bad:
+  sanitized: true
+  pan_detected: true
+  output_text: "Please refund my card [REDACTED_PAN] (exp 08/28, CVV [REDACTED_CVV]) immediately!"
+notes: Luhn-valid card numbers and CVV codes must be stripped prior to database persistence or LLM invocation.

@@ -1,0 +1,10 @@
+id: DSP015
+good:
+  api_endpoint: POST /v1/customer/disputes/PP-D-1015/accept-claim
+  expected_paypal_status: 200
+  new_state: CLAIM_ACCEPTED
+bad:
+  allowed: false
+  outcome: rejected_locally
+  error_code: DISPUTE_ALREADY_CLOSED
+notes: Cannot accept claim on a dispute that is already in RESOLVED state.

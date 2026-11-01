@@ -1,0 +1,11 @@
+id: DSP005
+good:
+  action: provide_evidence
+  allowed: true
+  outcome: permit_call
+bad:
+  action: provide_evidence
+  allowed: false
+  outcome: reject_locally
+  error_code: ACTION_NOT_PERMITTED
+notes: Must inspect dispute links array to prevent unnecessary 409 API error calls.

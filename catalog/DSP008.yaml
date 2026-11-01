@@ -1,0 +1,22 @@
+id: DSP008
+title: Validate Seller Protection for Unauthorised claims
+summary: Verify proof of shipment occurred prior to notification of unauthorized payment for UNAUTHORISED claims.
+kind: rule
+applies_when:
+  - Dispute reason is UNAUTHORISED
+  - Merchant evidence includes proof of shipment with carrier timestamp
+expected:
+  outcome: If shipment timestamp is prior to PayPal dispute notification time and shipped to address on Transaction Details, classify as ELIGIBLE; otherwise INELIGIBLE.
+severity_default: error
+correct_alternative:
+  - Verify shipment dispatch timestamp against dispute create_time
+  - Confirm delivery address matches shipping address provided by PayPal in order record
+  - Bundle PROOF_OF_FULFILLMENT payload
+false_positive_notes: May fail if merchant shipped after receiving pre-dispute hold notification or shipped to an address redirected by buyer.
+sources:
+  - url: https://www.paypal.com/us/webapps/mpp/ua/seller-protection
+    section: Proof of shipment requirements for unauthorized transactions
+  - url: https://docs.paypal.ai/growth/disputes/reference/dispute-reasons.md
+    section: Unauthorized transaction defense rules
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP008/

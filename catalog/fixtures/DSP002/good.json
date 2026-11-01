@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "PAYPAL-AUTH-ALGO": "SHA256withRSA",
+    "PAYPAL-CERT-URL": "https://api.sandbox.paypal.com/v1/notifications/certs/CERT-001",
+    "PAYPAL-TRANSMISSION-ID": "test-tx-002",
+    "PAYPAL-TRANSMISSION-SIG": "dmFsaWRfc2lnbmF0dXJlX2hhc2g=",
+    "PAYPAL-TRANSMISSION-TIME": "2026-10-31T12:00:00Z"
+  },
+  "body": {
+    "id": "WH-EV-002",
+    "resource": {
+      "dispute_id": "PP-D-1002",
+      "dispute_amount": {"currency": "USD", "value": "50.00"}
+    }
+  }
+}

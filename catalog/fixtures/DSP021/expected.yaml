@@ -1,0 +1,16 @@
+id: DSP021
+good:
+  total_concluded: 3
+  won_count: 2
+  lost_count: 1
+  win_rate: 0.667
+  gross_recovered_usd: 250.00
+  fees_paid_usd: 20.00
+  net_recovery_usd: 230.00
+bad:
+  total_concluded: 0
+  won_count: 0
+  lost_count: 0
+  win_rate: 0.00
+  net_recovery_usd: 0.00
+notes: Accurate net recovery calculation deducts fees incurred on lost disputes from total won dollars.

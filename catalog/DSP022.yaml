@@ -1,0 +1,22 @@
+id: DSP022
+title: Append immutable state transition audit log with cryptographic hash
+summary: Record every dispute state change, webhook payload, operator action, and API dispatch into an append-only audit trail with SHA-256 state hashes.
+kind: behavior
+applies_when:
+  - Any state transition occurs on a dispute (RECEIVED, EVALUATED, APPROVED, SUBMITTED, RESOLVED)
+  - An operator manually approves or overrides a recommendation
+expected:
+  outcome: An immutable audit row is inserted into audit_log containing timestamp, dispute_id, previous_state, new_state, actor_id, payload_summary, and SHA-256 payload hash.
+severity_default: error
+correct_alternative:
+  - Compute SHA-256 hash over event payload and state change metadata
+  - Insert record into audit_log table with current UTC ISO-8601 timestamp
+  - Prevent updates or deletions on audit_log table
+false_positive_notes: None; audit logging is compulsory for all lifecycle state mutations.
+sources:
+  - url: https://prometeoapi.com/en/blog/human-in-the-loop-agentic-banking
+    section: Audit trail and non-repudiation in automated banking workflows
+  - url: https://developer.paypal.com/platforms/disputes/handle-disputes/use-disputes-api
+    section: Dispute lifecycle tracking
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP022/

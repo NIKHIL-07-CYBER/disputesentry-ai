@@ -1,0 +1,14 @@
+{
+  "transaction_id": "TXN-987654321",
+  "mock_store_records": [
+    {
+      "order_id": "ORD-1006",
+      "transaction_id": "TXN-987654321",
+      "customer_email": "buyer@example.com",
+      "carrier": "USPS",
+      "tracking_number": "9400100000000000000001",
+      "status": "DELIVERED",
+      "delivery_date": "2026-10-25T14:30:00Z"
+    }
+  ]
+}

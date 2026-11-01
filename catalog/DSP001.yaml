@@ -1,0 +1,24 @@
+id: DSP001
+title: Verify valid PayPal webhook signature
+summary: Cryptographically verify authentic PayPal webhook requests using RSA-SHA256 and the PayPal X.509 certificate.
+kind: endpoint
+applies_when:
+  - Inbound HTTP POST request arrives at /webhooks/paypal
+  - Request headers include PAYPAL-AUTH-ALGO, PAYPAL-CERT-URL, PAYPAL-TRANSMISSION-ID, PAYPAL-TRANSMISSION-SIG, and PAYPAL-TRANSMISSION-TIME
+  - Signature computed over raw request body and transmission headers matches the decoded public key
+expected:
+  outcome: Request signature is verified as authentic; returns HTTP 200 OK and proceeds to event dispatch.
+severity_default: error
+correct_alternative:
+  - Extract transmission headers and raw request body
+  - Validate certificate URL originates from trusted PayPal domain
+  - Verify signature against cached public certificate or call PayPal verify-webhook-signature API
+  - Return HTTP 200 OK and proceed with dispute ingestion
+false_positive_notes: May fail if network clock skew causes PAYPAL-TRANSMISSION-TIME validation to exceed tolerance or if intermediate reverse proxy mutates raw request body bytes.
+sources:
+  - url: https://docs.paypal.ai/reference/api/rest/verify-webhook-signature/verify-webhook-signature
+    section: Verify webhook signature API specification
+  - url: https://developer.paypal.com/api/rest/webhooks/rest
+    section: Webhooks overview and security headers
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP001/

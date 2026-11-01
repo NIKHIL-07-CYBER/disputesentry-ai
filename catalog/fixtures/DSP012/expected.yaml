@@ -1,0 +1,10 @@
+id: DSP012
+good:
+  action_permitted: true
+  api_endpoint: POST /v1/customer/disputes/PP-D-1012/send-message
+  outcome: message_dispatched
+bad:
+  action_permitted: false
+  outcome: ACTION_NOT_PERMITTED_IN_STAGE
+  notes: Inquiry messaging is exclusively available in INQUIRY lifecycle stage.
+notes: Chargeback stage requires formal evidence representment, not bilateral customer chat.

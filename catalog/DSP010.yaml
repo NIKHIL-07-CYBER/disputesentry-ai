@@ -1,0 +1,23 @@
+id: DSP010
+title: Calculate dispute response deadline and urgency tier
+summary: Compute remaining time until seller_response_due_date and assign urgency level (CRITICAL, URGENT, NORMAL).
+kind: behavior
+applies_when:
+  - Dispute resource has non-null seller_response_due_date
+  - Dispute status is WAITING_FOR_SELLER_RESPONSE
+expected:
+  outcome: Assign CRITICAL if remaining time < 24 hours; URGENT if < 72 hours; NORMAL otherwise; if expired, flag as EXPIRED and block submission.
+severity_default: warning
+correct_alternative:
+  - Compute hours_remaining = (seller_response_due_date - current_time)
+  - If hours_remaining <= 0, mark DEADLINE_EXPIRED and notify merchant
+  - If hours_remaining < 24, elevate priority in dashboard queue and send critical alert
+  - Order dashboard list ascending by remaining time
+false_positive_notes: In inquiry stage, seller_response_due_date may be omitted or extended if buyer responds; check lifecycle stage.
+sources:
+  - url: https://developer.paypal.com/platforms/disputes/handle-disputes/use-disputes-api
+    section: Response due date semantics
+  - url: https://www.chargeback.io/blog/paypal-chargeback-time-limits-guide
+    section: Default loss rules on missed deadlines
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP010/

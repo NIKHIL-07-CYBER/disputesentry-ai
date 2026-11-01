@@ -1,0 +1,22 @@
+id: DSP009
+title: Compile evidence for Significantly Not As Described claims
+summary: Evaluate merchant refund policy, item condition records, or replacement communications for MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED disputes.
+kind: rule
+applies_when:
+  - Dispute reason is MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED
+  - Merchant store has product listing description, return policy agreement, or post-purchase correspondence
+expected:
+  outcome: If merchant already issued replacement/refund, format PROOF_OF_REFUND; if buyer kept item without return, compile merchant policy and communications; if no records, recommend CONCEDE.
+severity_default: warning
+correct_alternative:
+  - Check for existing refund transaction ID in merchant store
+  - Check whether merchant terms and condition explicitly state return requirements
+  - If evidence exists, package OTHER evidence with explanatory note; otherwise recommend claim acceptance
+false_positive_notes: SNAD disputes are heavily buyer-skewed by card networks; even with valid product descriptions, win rates are lower than INR.
+sources:
+  - url: https://docs.paypal.ai/growth/disputes/reference/dispute-reasons.md
+    section: Significantly Not as Described evidence guidelines
+  - url: https://www.paypal.com/us/webapps/mpp/ua/seller-protection
+    section: Items significantly not as described exclusions
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP009/

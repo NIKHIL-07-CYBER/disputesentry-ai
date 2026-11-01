@@ -1,0 +1,22 @@
+{
+  "concluded_disputes": [
+    {
+      "dispute_id": "PP-D-01",
+      "outcome": "RESOLVED_MERCHANT_WON",
+      "amount": 100.00,
+      "fee_paid": 0.00
+    },
+    {
+      "dispute_id": "PP-D-02",
+      "outcome": "RESOLVED_BUYER_WON",
+      "amount": 50.00,
+      "fee_paid": 20.00
+    },
+    {
+      "dispute_id": "PP-D-03",
+      "outcome": "RESOLVED_MERCHANT_WON",
+      "amount": 150.00,
+      "fee_paid": 0.00
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+id: DSP010
+good:
+  hours_remaining: 16.0
+  urgency_tier: CRITICAL
+  can_submit: true
+bad:
+  hours_remaining: -18.0
+  urgency_tier: EXPIRED
+  can_submit: false
+  error_code: DEADLINE_EXPIRED
+notes: Disputes past due date cannot accept evidence submissions via PayPal API.

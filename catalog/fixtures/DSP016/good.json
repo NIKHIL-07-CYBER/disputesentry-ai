@@ -1,0 +1,14 @@
+{
+  "files": [
+    {
+      "name": "delivery_receipt.pdf",
+      "size_bytes": 1048576,
+      "mime_type": "application/pdf"
+    },
+    {
+      "name": "doorstep_photo.jpg",
+      "size_bytes": 2097152,
+      "mime_type": "image/jpeg"
+    }
+  ]
+}

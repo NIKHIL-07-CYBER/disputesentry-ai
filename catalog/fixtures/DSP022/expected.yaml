@@ -1,0 +1,12 @@
+id: DSP022
+good:
+  operation: append_audit_entry
+  sha256_hash_computed: true
+  persisted: true
+  outcome: audit_entry_recorded
+bad:
+  operation: mutate_audit_entry
+  prohibited: true
+  error_code: AUDIT_LOG_IMMUTABLE
+  outcome: database_constraint_violation
+notes: The audit_log table enforces append-only triggers preventing UPDATE and DELETE.

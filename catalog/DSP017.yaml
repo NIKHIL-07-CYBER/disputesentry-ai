@@ -1,0 +1,22 @@
+id: DSP017
+title: Validate evidence attachment file formats and MIME types
+summary: Ensure evidence file attachments strictly conform to allowed PayPal formats (JPG, JPEG, GIF, PNG, PDF) and reject unpermitted file types.
+kind: rule
+applies_when:
+  - File attachments are included in evidence submission
+  - File extension or MIME magic bytes do not match JPG, JPEG, GIF, PNG, or PDF
+expected:
+  outcome: Submission is rejected with error UNSUPPORTED_FILE_TYPE; non-permitted files are removed from upload package.
+severity_default: error
+correct_alternative:
+  - Verify file MIME type using header magic bytes (e.g. %PDF, \xFF\xD8\xFF, \x89PNG)
+  - Allow only image/jpeg, image/png, image/gif, and application/pdf
+  - If invalid file detected, abort upload and notify operator
+false_positive_notes: None; executables, scripts (.sh, .bat), archives (.zip), and office docs (.docx) are prohibited by PayPal.
+sources:
+  - url: https://docs.paypal.ai/growth/disputes/reference/supported-file-types-sizes.md
+    section: Supported file formats for evidence submission
+  - url: https://developer.paypal.com/platforms/disputes/handle-disputes/use-disputes-api
+    section: Acceptable attachment MIME types
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP017/

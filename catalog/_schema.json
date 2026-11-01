@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DisputeSentryCatalogItem",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "kind",
+    "applies_when",
+    "expected",
+    "severity_default",
+    "correct_alternative",
+    "false_positive_notes",
+    "sources",
+    "verification_status",
+    "fixtures"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^DSP[0-9]{3}$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["behavior", "rule", "endpoint", "contract", "metric"]
+    },
+    "applies_when": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "expected": {
+      "type": "object",
+      "required": ["outcome"],
+      "properties": {
+        "outcome": { "type": "string" },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["when", "outcome"],
+            "properties": {
+              "when": { "type": "string" },
+              "outcome": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "severity_default": {
+      "type": "string",
+      "enum": ["error", "warning", "info"]
+    },
+    "correct_alternative": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "false_positive_notes": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url", "section"],
+        "properties": {
+          "url": { "type": "string" },
+          "section": { "type": "string" }
+        }
+      },
+      "minItems": 1
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": ["docs-cited", "test-verified", "unverified"]
+    },
+    "fixtures": {
+      "type": "string",
+      "pattern": "^catalog/fixtures/DSP[0-9]{3}/$"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,23 @@
+id: DSP013
+title: Enforce human approval gate for high-value or low-confidence decisions
+summary: Stage disputes requiring human approval in PENDING_APPROVAL and block automated API calls when amount >= $100 or confidence <= 0.65.
+kind: rule
+applies_when:
+  - Decision engine produces a recommended action (CONTEST or CONCEDE)
+  - Dispute amount >= APPROVAL_THRESHOLD_USD ($100.00) OR decision confidence <= 0.65 OR action is CONCEDE for an order with valid delivery proof
+expected:
+  outcome: Dispute state transitions to PENDING_APPROVAL; automated PayPal API call is halted; dispute appears on Operator Approval Queue.
+severity_default: warning
+correct_alternative:
+  - Evaluate approval rules against dispute amount and confidence
+  - If triggered, set decision_state to PENDING_APPROVAL
+  - Send dashboard notification to merchant operator
+  - Await explicit POST /approve or POST /reject endpoint call
+false_positive_notes: High-volume stores with larger average order values may wish to raise APPROVAL_THRESHOLD_USD in config.yaml.
+sources:
+  - url: https://dzone.com/articles/human-in-the-loop-approval-enterprise-ai-agents
+    section: Designing human-in-the-loop approval gates
+  - url: https://prometeoapi.com/en/blog/human-in-the-loop-agentic-banking
+    section: Risk classification and human authorization in automated financial workflows
+verification_status: docs-cited
+fixtures: catalog/fixtures/DSP013/

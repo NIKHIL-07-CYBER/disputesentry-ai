@@ -1,0 +1,12 @@
+{
+  "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+  "dispute_create_time": "2026-10-28T10:00:00Z",
+  "evidence": {
+    "carrier": "USPS",
+    "tracking_number": "9400111899223197428490",
+    "tracking_status": "PRE_SHIPMENT",
+    "delivery_timestamp": null,
+    "delivery_zip": null,
+    "transaction_shipping_zip": "94107"
+  }
+}
