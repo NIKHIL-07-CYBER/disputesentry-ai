@@ -1,0 +1,21 @@
+env: development
+host: 127.0.0.1
+port: 8000
+log_level: DEBUG
+
+paypal_client_id: "SANDBOX_MOCK_CLIENT_ID"
+paypal_client_secret: "SANDBOX_MOCK_CLIENT_SECRET"
+paypal_api_base: "https://api-m.sandbox.paypal.com"
+paypal_webhook_id: "WH-DEV-TEST-001"
+
+high_value_threshold_usd: 100.0
+standard_dispute_fee_usd: 15.0
+overhead_labor_cost_usd: 5.0
+deadline_fail_safe_hours: 2.0
+timeout_seconds: 10.0
+
+ai_provider: "gemini"
+gemini_api_key: "MOCK_DEV_KEY"
+gemini_model_name: "gemini-2.5-flash"
+
+database_url: "sqlite+aiosqlite:///disputesentry_dev.db"
