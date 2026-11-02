@@ -8,9 +8,20 @@ from typing import Any
 
 import aiosqlite
 import pytest
+import respx
 
+from app.clients.paypal_client import (
+    EvidenceValidationError,
+    PayPalDisputesClient,
+)
 from app.domain.models import MerchantOrderRecord
 from app.services.audit_service import AuditService
+from app.services.dispute_sync import (
+    DisputeSyncCoordinator,
+    HATEOASViolationError,
+    validate_hateoas_action,
+    validate_hateoas_action_or_raise,
+)
 from app.services.sanitizer import PCISanitizer
 from app.storage.database import init_database
 from app.storage.repository import MerchantRepository
@@ -142,11 +153,115 @@ def dsp022_handler(
     )
 
 
+def dsp005_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP005: Validate allowed dispute action links."""
+    good_action = str(expected["good"]["action"])
+    assert (
+        validate_hateoas_action(good.get("links", []), good_action)
+        is expected["good"]["allowed"]
+    )
+    validate_hateoas_action_or_raise(good.get("links", []), good_action)
+
+    bad_action = str(expected["bad"]["action"])
+    assert (
+        validate_hateoas_action(bad.get("links", []), bad_action)
+        is expected["bad"]["allowed"]
+    )
+    with pytest.raises(HATEOASViolationError) as exc_info:
+        validate_hateoas_action_or_raise(bad.get("links", []), bad_action)
+    assert exc_info.value.error_code == expected["bad"]["error_code"]
+
+    return FixturePassResult(
+        catalog_id="DSP005",
+        status="PASSED",
+        details="HATEOAS dispute action link validation verified",
+    )
+
+
+def dsp010_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP010: Calculate dispute deadline urgency tier."""
+    coordinator = DisputeSyncCoordinator(
+        client=PayPalDisputesClient("id", "secret", "https://api-m.sandbox.paypal.com"),
+        repo=MerchantRepository(None),  # type: ignore[arg-type]
+        audit=AuditService(None),  # type: ignore[arg-type]
+    )
+
+    hours_good, tier_good = coordinator.compute_deadline_urgency(
+        good["seller_response_due_date"], good["current_time"]
+    )
+    assert hours_good == expected["good"]["hours_remaining"]
+    assert tier_good == expected["good"]["urgency_tier"]
+    assert (hours_good > 0) is expected["good"]["can_submit"]
+
+    hours_bad, tier_bad = coordinator.compute_deadline_urgency(
+        bad["seller_response_due_date"], bad["current_time"]
+    )
+    assert hours_bad == expected["bad"]["hours_remaining"]
+    assert tier_bad == expected["bad"]["urgency_tier"]
+    assert (hours_bad > 0) is expected["bad"]["can_submit"]
+
+    return FixturePassResult(
+        catalog_id="DSP010",
+        status="PASSED",
+        details="Response deadline urgency calculation and tiering verified",
+    )
+
+
+def dsp014_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP014: Provide-evidence API call with tracking details."""
+    async def _run() -> None:
+        client = PayPalDisputesClient(
+            client_id="mock_id",
+            client_secret="mock_secret",
+            base_url="https://api-m.sandbox.paypal.com",
+        )
+        api_path = str(expected["good"]["api_path"])
+        with respx.mock(assert_all_called=False) as router:
+            router.post("https://api-m.sandbox.paypal.com/v1/oauth2/token").respond(
+                status_code=200,
+                json={"access_token": "token_dsp014", "expires_in": 3600},
+            )
+            evidence_route = router.post(
+                f"https://api-m.sandbox.paypal.com{api_path}"
+            ).respond(
+                status_code=int(expected["good"]["expected_paypal_status"]),
+                json={"status": expected["good"]["new_state"]},
+            )
+
+            # Test good submission
+            res = await client.provide_evidence(str(good["dispute_id"]), good)
+            assert evidence_route.called
+            assert res.get("status") == expected["good"]["new_state"]
+
+            # Test bad submission (blocked before dispatch)
+            with pytest.raises(EvidenceValidationError) as exc_info:
+                await client.provide_evidence(str(bad["dispute_id"]), bad)
+            assert exc_info.value.error_code == expected["bad"]["validation_error"]
+
+        await client.aclose()
+
+    asyncio.run(_run())
+    return FixturePassResult(
+        catalog_id="DSP014",
+        status="PASSED",
+        details="Provide-evidence API dispatch and compulsory tracking validation verified",
+    )
+
+
 @pytest.fixture
 def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     """Fixture providing an initialized CatalogFixtureRunner instance."""
     instance = CatalogFixtureRunner(fixtures_dir=fixtures_dir)
+    instance.register_handler("DSP005", dsp005_handler)
     instance.register_handler("DSP006", dsp006_handler)
+    instance.register_handler("DSP010", dsp010_handler)
+    instance.register_handler("DSP014", dsp014_handler)
     instance.register_handler("DSP019", dsp019_handler)
     instance.register_handler("DSP022", dsp022_handler)
     return instance
@@ -360,4 +475,26 @@ def test_dsp022_cryptographic_audit_trail(runner: CatalogFixtureRunner) -> None:
     result = runner.execute_oracle_check("DSP022")
     assert result.status == "PASSED"
     assert result.catalog_id == "DSP022"
+
+
+def test_dsp005_hateoas_action_validation(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP005: Validate allowed dispute action links."""
+    result = runner.execute_oracle_check("DSP005")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP005"
+
+
+def test_dsp010_deadline_urgency_calculation(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP010: Calculate dispute response deadline and urgency."""
+    result = runner.execute_oracle_check("DSP010")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP010"
+
+
+def test_dsp014_provide_evidence_api_submission(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP014: Execute provide-evidence API call with tracking."""
+    result = runner.execute_oracle_check("DSP014")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP014"
+
 
