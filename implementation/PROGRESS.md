@@ -6,7 +6,7 @@
 | `S01` | Verification Harness | `review-pass` | 2026-11-02 | `644a386` | Dynamic catalog fixture runner and schema validation suite, 36 tests passing | - |
 | `S02` | Webhook Ingestion Core | `review-pass` | 2026-11-02 | `04dcbfb` | RSA-SHA256 signature verification, SSRF cert domain whitelist, in-memory deduplication, 13 tests passing | - |
 | `S03` | Domain Models & Data Layer | `review-pass` | 2026-11-02 | `358a5e3` | Domain models, seeded SQLite orders, PCI DSS sanitizer, chained SHA-256 audit trail, 21 new tests | - |
-| `S04` | Walking Skeleton Sync | `not-started` | - | - | DSP005, DSP010, DSP014 | - |
+| `S04` | Walking Skeleton Sync | `implemented` | 2026-11-02 | `a020999` | PayPalDisputesClient, HATEOAS link checks (DSP005), deadline urgency (DSP010), provide-evidence (DSP014), walking skeleton verified | - |
 | `S05` | Seller Protection Engine | `not-started` | - | - | DSP007, DSP008, DSP009 | - |
 | `S06` | Economic Decision Engine | `not-started` | - | - | DSP011, DSP012, DSP021 | - |
 | `S07` | Approval Gate & Fallbacks | `not-started` | - | - | DSP013, DSP015, DSP018 | - |
@@ -16,6 +16,7 @@
 | `S11` | Hardening & Release | `not-started` | - | - | Docker, E2E validation | - |
 
 ## Log
+- 2026-11-02: Stage S04 implemented (a020999) - PayPal client with OAuth2 token caching, HATEOAS action validation (DSP005), deadline urgency calculation (DSP010), evidence dispatch (DSP014), walking skeleton slice verified, 15 new tests passing.
 - 2026-11-02: Stage S03 implemented (358a5e3) - SQLite WAL storage, seeded orders, PCISanitizer (DSP019), AuditService with SHA-256 chain (DSP022), MerchantRepository (DSP006), 21 tests passing.
 - 2026-11-02: Stage S02 implemented (04dcbfb) - RSA-SHA256 signature verification, SSRF cert domain whitelist, in-memory deduplication, 13 tests passing.
 - 2026-11-02: Stage S01 implemented (644a386) - Dynamic catalog fixture runner and schema validation suite, 36 tests passing.
