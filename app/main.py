@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 
 from app import __version__
+from app.api.webhooks import router as webhooks_router
 from app.config import AppConfig, get_config
 
 
@@ -36,6 +37,9 @@ def create_app(config: AppConfig | None = None) -> FastAPI:
             "service": "disputesentry-ai",
             "version": __version__,
         }
+
+    # Mount API routers
+    application.include_router(webhooks_router)
 
     return application
 
