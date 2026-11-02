@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|---|
 | `S00` | Scaffolding and Tooling | `review-pass` | 2026-11-02 | `4ba630a` | Workspace scaffolding, AppConfig settings loader, GET /health endpoint, 8 unit tests | - |
 | `S01` | Verification Harness | `review-pass` | 2026-11-02 | `644a386` | Dynamic catalog fixture runner and schema validation suite, 36 tests passing | - |
-| `S02` | Webhook Ingestion Core | `implemented` | 2026-11-02 | `04dcbfb` | RSA-SHA256 signature verification, SSRF cert domain whitelist, in-memory deduplication, 13 tests passing | - |
+| `S02` | Webhook Ingestion Core | `review-pass` | 2026-11-02 | `04dcbfb` | RSA-SHA256 signature verification, SSRF cert domain whitelist, in-memory deduplication, 13 tests passing | - |
 | `S03` | Domain Models & Data Layer | `not-started` | - | - | DSP006, DSP019, DSP022 | - |
 | `S04` | Walking Skeleton Sync | `not-started` | - | - | DSP005, DSP010, DSP014 | - |
 | `S05` | Seller Protection Engine | `not-started` | - | - | DSP007, DSP008, DSP009 | - |
