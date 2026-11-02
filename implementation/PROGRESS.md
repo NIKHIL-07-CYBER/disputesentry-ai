@@ -2,7 +2,7 @@
 
 | Stage | Name | Status | Date | Commit | Notes | Blockers |
 |---|---|---|---|---|---|---|
-| `S00` | Scaffolding and Tooling | `implemented` | 2026-11-02 | `4ba630a` | Workspace scaffolding, AppConfig settings loader, GET /health endpoint, 8 unit tests | - |
+| `S00` | Scaffolding and Tooling | `review-pass` | 2026-11-02 | `4ba630a` | Workspace scaffolding, AppConfig settings loader, GET /health endpoint, 8 unit tests | - |
 | `S01` | Verification Harness | `not-started` | - | - | Catalog fixture runner | - |
 | `S02` | Webhook Ingestion Core | `not-started` | - | - | DSP001-DSP004 | - |
 | `S03` | Domain Models & Data Layer | `not-started` | - | - | DSP006, DSP019, DSP022 | - |
