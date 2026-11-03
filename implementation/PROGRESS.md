@@ -12,10 +12,11 @@
 | `S07` | Approval Gate & Fallbacks | `review-pass` | 2026-11-03 | `b5d5a40` | ApprovalGateService (DSP013), accept-claim concession executor (DSP015), DeadlineMonitorDaemon 2h fail-safe (DSP018), 18 new tests | - |
 | `S08` | Evidence Attachment Compiler | `review-pass` | 2026-11-03 | `f9b848d` | EvidenceCompiler size limits (DSP016), magic bytes MIME verification (DSP017), multipart packaging, 18 new unit tests | - |
 | `S09` | AI Reasoning & Shielding | `review-pass` | 2026-11-03 | `076b871` | Gemini structured reasoning client, XML boundary isolation, prompt injection shield (DSP020), 21 unit tests | - |
-| `S10` | Web API & Dashboard | `not-started` | - | - | Merchant UI | - |
+| `S10` | Web API & Dashboard | `implemented` | 2026-11-03 | `e298b3f` | Jinja2 operator dashboard, dispute detail modal with audit trail/evidence, metrics API, 11 tests passing | - |
 | `S11` | Hardening & Release | `not-started` | - | - | Docker, E2E validation | - |
 
 ## Log
+- 2026-11-03: Stage S10 implemented (e298b3f) - Jinja2 merchant operator dashboard, priority dispute queue sorted by urgency/amount, modal evidence inspection, metrics API, 11 new integration tests passing.
 - 2026-11-03: Stage S09 implemented (076b871) - Gemini structured reasoning client, ReasoningShield XML delimiter escaping, prompt injection detection (DSP020), deterministic heuristic fallback engine, 21 unit tests passing with 0% adversarial compromise.
 - 2026-11-03: Stage S08 implemented (f9b848d) - EvidenceCompiler size limits (DSP016), magic bytes MIME verification (DSP017), multipart packaging with input JSON part, 18 new unit tests passing.
 - 2026-11-03: Stage S07 implemented (b5d5a40) - ApprovalGateService (DSP013), accept-claim concession executor (DSP015), DeadlineMonitorDaemon 2-hour fail-safe fallback (DSP018), FastAPI operator review routes, 18 new tests passing.
