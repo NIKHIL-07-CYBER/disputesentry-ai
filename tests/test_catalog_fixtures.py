@@ -29,6 +29,7 @@ from app.services.dispute_sync import (
     validate_hateoas_action,
     validate_hateoas_action_or_raise,
 )
+from app.services.evidence_compiler import EvidenceCompiler
 from app.services.metrics_service import MetricsService
 from app.services.sanitizer import PCISanitizer
 from app.storage.database import init_database
@@ -518,6 +519,49 @@ def dsp018_handler(
     )
 
 
+def dsp016_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP016: Enforce evidence attachment file size limits."""
+    res_good = EvidenceCompiler.evaluate_size_limits(good["files"])
+    assert res_good["validation"] == expected["good"]["validation"]
+    assert res_good["total_size_bytes"] == expected["good"]["total_size_bytes"]
+    assert res_good["outcome"] == expected["good"]["outcome"]
+
+    res_bad = EvidenceCompiler.evaluate_size_limits(bad["files"])
+    assert res_bad["validation"] == expected["bad"]["validation"]
+    assert res_bad["outcome"] == expected["bad"]["outcome"]
+    assert res_bad["error_code"] == expected["bad"]["error_code"]
+    assert res_bad["oversized_files"] == expected["bad"]["oversized_files"]
+
+    return FixturePassResult(
+        catalog_id="DSP016",
+        status="PASSED",
+        details="Evidence attachment size limits (10MB per file, 50MB cumulative) verified",
+    )
+
+
+def dsp017_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP017: Validate attachment formats and MIME types."""
+    res_good = EvidenceCompiler.evaluate_file_types(good["files"])
+    assert res_good["validation"] == expected["good"]["validation"]
+    assert res_good["outcome"] == expected["good"]["outcome"]
+
+    res_bad = EvidenceCompiler.evaluate_file_types(bad["files"])
+    assert res_bad["validation"] == expected["bad"]["validation"]
+    assert res_bad["outcome"] == expected["bad"]["outcome"]
+    assert res_bad["error_code"] == expected["bad"]["error_code"]
+    assert res_bad["disallowed_files"] == expected["bad"]["disallowed_files"]
+
+    return FixturePassResult(
+        catalog_id="DSP017",
+        status="PASSED",
+        details="Evidence attachment MIME type whitelist (JPG, PNG, GIF, PDF) verified",
+    )
+
+
 @pytest.fixture
 def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     """Fixture providing an initialized CatalogFixtureRunner instance."""
@@ -533,6 +577,8 @@ def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     instance.register_handler("DSP013", dsp013_handler)
     instance.register_handler("DSP014", dsp014_handler)
     instance.register_handler("DSP015", dsp015_handler)
+    instance.register_handler("DSP016", dsp016_handler)
+    instance.register_handler("DSP017", dsp017_handler)
     instance.register_handler("DSP018", dsp018_handler)
     instance.register_handler("DSP019", dsp019_handler)
     instance.register_handler("DSP021", dsp021_handler)
@@ -832,6 +878,21 @@ def test_dsp018_deadline_safeguard_fallback(runner: CatalogFixtureRunner) -> Non
     result = runner.execute_oracle_check("DSP018")
     assert result.status == "PASSED"
     assert result.catalog_id == "DSP018"
+
+
+def test_dsp016_evidence_file_size_limits(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP016: Enforce evidence attachment file size limits."""
+    result = runner.execute_oracle_check("DSP016")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP016"
+
+
+def test_dsp017_evidence_file_format_mime_types(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP017: Validate attachment formats and MIME types."""
+    result = runner.execute_oracle_check("DSP017")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP017"
+
 
 
 
