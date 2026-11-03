@@ -11,7 +11,7 @@
 | `S06` | Economic Decision Engine | `review-pass` | 2026-11-03 | `3075c28` | EconomicEngine EV formula (DSP011), inquiry messaging permissions (DSP012), MetricsService recovery KPIs (DSP021) | - |
 | `S07` | Approval Gate & Fallbacks | `review-pass` | 2026-11-03 | `b5d5a40` | ApprovalGateService (DSP013), accept-claim concession executor (DSP015), DeadlineMonitorDaemon 2h fail-safe (DSP018), 18 new tests | - |
 | `S08` | Evidence Attachment Compiler | `review-pass` | 2026-11-03 | `f9b848d` | EvidenceCompiler size limits (DSP016), magic bytes MIME verification (DSP017), multipart packaging, 18 new unit tests | - |
-| `S09` | AI Reasoning & Shielding | `implemented` | 2026-11-03 | `076b871` | Gemini structured reasoning client, XML boundary isolation, prompt injection shield (DSP020), 21 unit tests | - |
+| `S09` | AI Reasoning & Shielding | `review-pass` | 2026-11-03 | `076b871` | Gemini structured reasoning client, XML boundary isolation, prompt injection shield (DSP020), 21 unit tests | - |
 | `S10` | Web API & Dashboard | `not-started` | - | - | Merchant UI | - |
 | `S11` | Hardening & Release | `not-started` | - | - | Docker, E2E validation | - |
 
