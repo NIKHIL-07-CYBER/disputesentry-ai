@@ -9,7 +9,7 @@
 | `S04` | Walking Skeleton Sync | `review-pass` | 2026-11-02 | `a020999` | PayPalDisputesClient, HATEOAS link checks (DSP005), deadline urgency (DSP010), provide-evidence (DSP014), walking skeleton verified | - |
 | `S05` | Seller Protection Engine | `review-pass` | 2026-11-03 | `d43bffb` | Seller protection engine for INR (DSP007), Unauthorised (DSP008), and SNAD (DSP009) disputes | - |
 | `S06` | Economic Decision Engine | `review-pass` | 2026-11-03 | `3075c28` | EconomicEngine EV formula (DSP011), inquiry messaging permissions (DSP012), MetricsService recovery KPIs (DSP021) | - |
-| `S07` | Approval Gate & Fallbacks | `implemented` | 2026-11-03 | `b5d5a40` | ApprovalGateService (DSP013), accept-claim concession executor (DSP015), DeadlineMonitorDaemon 2h fail-safe (DSP018), 18 new tests | - |
+| `S07` | Approval Gate & Fallbacks | `review-pass` | 2026-11-03 | `b5d5a40` | ApprovalGateService (DSP013), accept-claim concession executor (DSP015), DeadlineMonitorDaemon 2h fail-safe (DSP018), 18 new tests | - |
 | `S08` | Evidence Attachment Compiler | `not-started` | - | - | DSP016, DSP017 | - |
 | `S09` | AI Reasoning & Shielding | `not-started` | - | - | DSP020 | - |
 | `S10` | Web API & Dashboard | `not-started` | - | - | Merchant UI | - |
