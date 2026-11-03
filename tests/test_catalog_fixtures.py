@@ -17,7 +17,12 @@ from app.clients.paypal_client import (
 from app.domain.economics import EconomicEngine
 from app.domain.models import MerchantOrderRecord
 from app.domain.seller_protection import SellerProtectionEngine
+from app.services.approval_gate import (
+    DisputeAlreadyClosedError,
+    evaluate_gate_criteria,
+)
 from app.services.audit_service import AuditService
+from app.services.deadline_monitor import DeadlineMonitorDaemon
 from app.services.dispute_sync import (
     DisputeSyncCoordinator,
     HATEOASViolationError,
@@ -400,6 +405,119 @@ def dsp021_handler(
     )
 
 
+def dsp013_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP013: High-value dispute human approval gate."""
+    res_good = evaluate_gate_criteria(
+        amount=float(good["dispute_amount"]),
+        confidence=float(good["confidence"]),
+        recommended_action=good.get("recommended_action"),
+    )
+    assert res_good.requires_human_approval is expected["good"]["requires_human_approval"]
+    assert res_good.decision_state == expected["good"]["decision_state"]
+    assert res_good.trigger_reason == expected["good"]["trigger_reason"]
+
+    res_bad = evaluate_gate_criteria(
+        amount=float(bad["dispute_amount"]),
+        confidence=float(bad["confidence"]),
+        recommended_action=bad.get("recommended_action"),
+    )
+    assert res_bad.requires_human_approval is expected["bad"]["requires_human_approval"]
+    assert res_bad.decision_state == expected["bad"]["decision_state"]
+    assert res_bad.trigger_reason == expected["bad"]["trigger_reason"]
+
+    return FixturePassResult(
+        catalog_id="DSP013",
+        status="PASSED",
+        details="High-value dispute human approval gate and auto-executing threshold verified",
+    )
+
+
+def dsp015_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP015: Execute accept-claim API concession call."""
+    async def _run() -> None:
+        client = PayPalDisputesClient(
+            client_id="mock_id",
+            client_secret="mock_secret",
+            base_url="https://api-m.sandbox.paypal.com",
+        )
+        api_path = f"/v1/customer/disputes/{good['dispute_id']}/accept-claim"
+        with respx.mock(assert_all_called=False) as router:
+            router.post("https://api-m.sandbox.paypal.com/v1/oauth2/token").respond(
+                status_code=200,
+                json={"access_token": "token_dsp015", "expires_in": 3600},
+            )
+            accept_route = router.post(
+                f"https://api-m.sandbox.paypal.com{api_path}"
+            ).respond(
+                status_code=int(expected["good"]["expected_paypal_status"]),
+                json={"status": expected["good"]["new_state"]},
+            )
+
+            # Test good submission
+            res = await client.accept_claim(
+                str(good["dispute_id"]),
+                note=str(good.get("note", "")),
+                status=str(good.get("status")),
+            )
+            assert accept_route.called
+            assert res["new_state"] == expected["good"]["new_state"]
+            assert res["api_endpoint"] == expected["good"]["api_endpoint"]
+
+            # Test bad submission (already resolved dispute rejected locally)
+            with pytest.raises(DisputeAlreadyClosedError) as exc_info:
+                await client.accept_claim(
+                    str(bad["dispute_id"]),
+                    note=str(bad.get("note", "")),
+                    status=str(bad.get("status")),
+                )
+            assert exc_info.value.error_code == expected["bad"]["error_code"]
+
+        await client.aclose()
+
+    asyncio.run(_run())
+    return FixturePassResult(
+        catalog_id="DSP015",
+        status="PASSED",
+        details="Accept-claim API call execution and already-resolved rejection verified",
+    )
+
+
+def dsp018_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP018: Safeguard pending approvals approaching deadline."""
+    res_good = DeadlineMonitorDaemon.evaluate_deadline_policy(
+        hours_until_deadline=float(good["hours_until_deadline"]),
+        decision_state=str(good.get("decision_state", "PENDING_APPROVAL")),
+        has_valid_delivery_proof=bool(good.get("has_valid_delivery_proof", True)),
+        recommended_action=str(good.get("recommended_action", "CONTEST")),
+    )
+    assert res_good["state"] == expected["good"]["state"]
+    assert res_good["action_taken"] == expected["good"]["action_taken"]
+    assert res_good["alert_level"] == expected["good"]["alert_level"]
+
+    res_bad = DeadlineMonitorDaemon.evaluate_deadline_policy(
+        hours_until_deadline=float(bad["hours_until_deadline"]),
+        decision_state=str(bad.get("decision_state", "PENDING_APPROVAL")),
+        has_valid_delivery_proof=bool(bad.get("has_valid_delivery_proof", True)),
+        recommended_action=str(bad.get("recommended_action", "CONTEST")),
+    )
+    assert res_bad["state"] == expected["bad"]["state"]
+    assert res_bad["action_taken"] == expected["bad"]["action_taken"]
+    assert res_bad["alert_level"] == expected["bad"]["alert_level"]
+    assert res_bad["reason"] == expected["bad"]["reason"]
+
+    return FixturePassResult(
+        catalog_id="DSP018",
+        status="PASSED",
+        details="Dispute response deadline approaching safeguard and fallback verified",
+    )
+
+
 @pytest.fixture
 def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     """Fixture providing an initialized CatalogFixtureRunner instance."""
@@ -412,7 +530,10 @@ def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     instance.register_handler("DSP010", dsp010_handler)
     instance.register_handler("DSP011", dsp011_handler)
     instance.register_handler("DSP012", dsp012_handler)
+    instance.register_handler("DSP013", dsp013_handler)
     instance.register_handler("DSP014", dsp014_handler)
+    instance.register_handler("DSP015", dsp015_handler)
+    instance.register_handler("DSP018", dsp018_handler)
     instance.register_handler("DSP019", dsp019_handler)
     instance.register_handler("DSP021", dsp021_handler)
     instance.register_handler("DSP022", dsp022_handler)
@@ -690,6 +811,28 @@ def test_dsp021_recovery_and_win_rate_metrics(runner: CatalogFixtureRunner) -> N
     result = runner.execute_oracle_check("DSP021")
     assert result.status == "PASSED"
     assert result.catalog_id == "DSP021"
+
+
+def test_dsp013_human_approval_gate(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP013: High-value dispute human approval gate."""
+    result = runner.execute_oracle_check("DSP013")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP013"
+
+
+def test_dsp015_accept_claim_concession(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP015: Execute accept-claim API concession call."""
+    result = runner.execute_oracle_check("DSP015")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP015"
+
+
+def test_dsp018_deadline_safeguard_fallback(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP018: Safeguard pending approvals approaching deadline."""
+    result = runner.execute_oracle_check("DSP018")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP018"
+
 
 
 
