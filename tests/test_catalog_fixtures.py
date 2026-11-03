@@ -14,6 +14,7 @@ from app.clients.paypal_client import (
     EvidenceValidationError,
     PayPalDisputesClient,
 )
+from app.domain.economics import EconomicEngine
 from app.domain.models import MerchantOrderRecord
 from app.domain.seller_protection import SellerProtectionEngine
 from app.services.audit_service import AuditService
@@ -23,6 +24,7 @@ from app.services.dispute_sync import (
     validate_hateoas_action,
     validate_hateoas_action_or_raise,
 )
+from app.services.metrics_service import MetricsService
 from app.services.sanitizer import PCISanitizer
 from app.storage.database import init_database
 from app.storage.repository import MerchantRepository
@@ -319,6 +321,85 @@ def dsp009_handler(
     )
 
 
+def dsp011_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP011: Calculate Net Expected Recovery ROI."""
+    engine = EconomicEngine()
+
+    res_good = engine.evaluate_fixture(good)
+    assert res_good.expected_value == expected["good"]["expected_value"]
+    assert res_good.recommended_action.value == expected["good"]["recommended_action"]
+    assert res_good.justification == expected["good"]["rationale"]
+
+    res_bad = engine.evaluate_fixture(bad)
+    assert res_bad.expected_value == expected["bad"]["expected_value"]
+    assert res_bad.recommended_action.value == expected["bad"]["recommended_action"]
+    assert res_bad.justification == expected["bad"]["rationale"]
+
+    return FixturePassResult(
+        catalog_id="DSP011",
+        status="PASSED",
+        details="Net Expected Recovery ROI calculation and action recommendation verified",
+    )
+
+
+def dsp012_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP012: Dispatch inquiry communication in INQUIRY stage."""
+    res_good = EconomicEngine.evaluate_inquiry_action(
+        stage=good["stage"],
+        dispute_id=good["dispute_id"],
+        message_text=good.get("message_text"),
+    )
+    assert res_good.action_permitted is expected["good"]["action_permitted"]
+    assert res_good.api_endpoint == expected["good"]["api_endpoint"]
+    assert res_good.outcome == expected["good"]["outcome"]
+
+    res_bad = EconomicEngine.evaluate_inquiry_action(
+        stage=bad["stage"],
+        dispute_id=bad["dispute_id"],
+        message_text=bad.get("message_text"),
+    )
+    assert res_bad.action_permitted is expected["bad"]["action_permitted"]
+    assert res_bad.outcome == expected["bad"]["outcome"]
+    assert res_bad.notes == expected["bad"]["notes"]
+
+    return FixturePassResult(
+        catalog_id="DSP012",
+        status="PASSED",
+        details="Inquiry lifecycle stage messaging permissions verified",
+    )
+
+
+def dsp021_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP021: Compute win rate and net recovery metrics."""
+    res_good = MetricsService.compute_metrics_from_records(good["concluded_disputes"])
+    assert res_good["total_concluded"] == expected["good"]["total_concluded"]
+    assert res_good["won_count"] == expected["good"]["won_count"]
+    assert res_good["lost_count"] == expected["good"]["lost_count"]
+    assert res_good["win_rate"] == expected["good"]["win_rate"]
+    assert res_good["gross_recovered_usd"] == expected["good"]["gross_recovered_usd"]
+    assert res_good["fees_paid_usd"] == expected["good"]["fees_paid_usd"]
+    assert res_good["net_recovery_usd"] == expected["good"]["net_recovery_usd"]
+
+    res_bad = MetricsService.compute_metrics_from_records(bad["concluded_disputes"])
+    assert res_bad["total_concluded"] == expected["bad"]["total_concluded"]
+    assert res_bad["won_count"] == expected["bad"]["won_count"]
+    assert res_bad["lost_count"] == expected["bad"]["lost_count"]
+    assert res_bad["win_rate"] == expected["bad"]["win_rate"]
+    assert res_bad["net_recovery_usd"] == expected["bad"]["net_recovery_usd"]
+
+    return FixturePassResult(
+        catalog_id="DSP021",
+        status="PASSED",
+        details="Historical dispute win rate and net recovery financial metrics verified",
+    )
+
+
 @pytest.fixture
 def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     """Fixture providing an initialized CatalogFixtureRunner instance."""
@@ -329,8 +410,11 @@ def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     instance.register_handler("DSP008", dsp008_handler)
     instance.register_handler("DSP009", dsp009_handler)
     instance.register_handler("DSP010", dsp010_handler)
+    instance.register_handler("DSP011", dsp011_handler)
+    instance.register_handler("DSP012", dsp012_handler)
     instance.register_handler("DSP014", dsp014_handler)
     instance.register_handler("DSP019", dsp019_handler)
+    instance.register_handler("DSP021", dsp021_handler)
     instance.register_handler("DSP022", dsp022_handler)
     return instance
 
@@ -585,6 +669,28 @@ def test_dsp009_snad_seller_protection(runner: CatalogFixtureRunner) -> None:
     result = runner.execute_oracle_check("DSP009")
     assert result.status == "PASSED"
     assert result.catalog_id == "DSP009"
+
+
+def test_dsp011_net_expected_recovery_roi(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP011: Calculate Net Expected Recovery ROI."""
+    result = runner.execute_oracle_check("DSP011")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP011"
+
+
+def test_dsp012_inquiry_stage_communication(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP012: Inquiry stage messaging permissions."""
+    result = runner.execute_oracle_check("DSP012")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP012"
+
+
+def test_dsp021_recovery_and_win_rate_metrics(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP021: Compute win rate and net recovery metrics."""
+    result = runner.execute_oracle_check("DSP021")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP021"
+
 
 
 
