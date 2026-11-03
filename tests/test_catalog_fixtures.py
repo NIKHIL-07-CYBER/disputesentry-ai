@@ -15,6 +15,7 @@ from app.clients.paypal_client import (
     PayPalDisputesClient,
 )
 from app.domain.models import MerchantOrderRecord
+from app.domain.seller_protection import SellerProtectionEngine
 from app.services.audit_service import AuditService
 from app.services.dispute_sync import (
     DisputeSyncCoordinator,
@@ -254,12 +255,79 @@ def dsp014_handler(
     )
 
 
+def dsp007_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP007: Validate Seller Protection for INR claims."""
+    res_good = SellerProtectionEngine.evaluate_fixture(good)
+    assert res_good.seller_protection_eligible is expected["good"]["seller_protection_eligible"]
+    assert res_good.win_probability >= float(expected["good"]["win_probability"])
+    assert res_good.recommended_action.value == expected["good"]["recommended_action"]
+    assert res_good.evidence_type == expected["good"]["evidence_type"]
+
+    res_bad = SellerProtectionEngine.evaluate_fixture(bad)
+    assert res_bad.seller_protection_eligible is expected["bad"]["seller_protection_eligible"]
+    assert res_bad.win_probability <= float(expected["bad"]["win_probability"])
+    assert res_bad.recommended_action.value == expected["bad"]["recommended_action"]
+
+    return FixturePassResult(
+        catalog_id="DSP007",
+        status="PASSED",
+        details="INR Seller Protection delivery and postal code verification verified",
+    )
+
+
+def dsp008_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP008: Validate Seller Protection for Unauthorised claims."""
+    res_good = SellerProtectionEngine.evaluate_fixture(good)
+    assert res_good.seller_protection_eligible is expected["good"]["seller_protection_eligible"]
+    assert res_good.win_probability >= float(expected["good"]["win_probability"])
+    assert res_good.recommended_action.value == expected["good"]["recommended_action"]
+
+    res_bad = SellerProtectionEngine.evaluate_fixture(bad)
+    assert res_bad.seller_protection_eligible is expected["bad"]["seller_protection_eligible"]
+    assert res_bad.win_probability <= float(expected["bad"]["win_probability"])
+    assert res_bad.recommended_action.value == expected["bad"]["recommended_action"]
+
+    return FixturePassResult(
+        catalog_id="DSP008",
+        status="PASSED",
+        details="Unauthorised dispute timely dispatch check verified",
+    )
+
+
+def dsp009_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP009: Compile evidence for SNAD claims."""
+    res_good = SellerProtectionEngine.evaluate_fixture(good)
+    assert res_good.evidence_type == expected["good"]["evidence_type"]
+    assert res_good.win_probability >= float(expected["good"]["win_probability"])
+    assert res_good.recommended_action.value == expected["good"]["recommended_action"]
+
+    res_bad = SellerProtectionEngine.evaluate_fixture(bad)
+    assert res_bad.evidence_type == expected["bad"]["evidence_type"]
+    assert res_bad.win_probability <= float(expected["bad"]["win_probability"])
+    assert res_bad.recommended_action.value == expected["bad"]["recommended_action"]
+
+    return FixturePassResult(
+        catalog_id="DSP009",
+        status="PASSED",
+        details="SNAD prior refund and return policy evaluation verified",
+    )
+
+
 @pytest.fixture
 def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     """Fixture providing an initialized CatalogFixtureRunner instance."""
     instance = CatalogFixtureRunner(fixtures_dir=fixtures_dir)
     instance.register_handler("DSP005", dsp005_handler)
     instance.register_handler("DSP006", dsp006_handler)
+    instance.register_handler("DSP007", dsp007_handler)
+    instance.register_handler("DSP008", dsp008_handler)
+    instance.register_handler("DSP009", dsp009_handler)
     instance.register_handler("DSP010", dsp010_handler)
     instance.register_handler("DSP014", dsp014_handler)
     instance.register_handler("DSP019", dsp019_handler)
@@ -496,5 +564,27 @@ def test_dsp014_provide_evidence_api_submission(runner: CatalogFixtureRunner) ->
     result = runner.execute_oracle_check("DSP014")
     assert result.status == "PASSED"
     assert result.catalog_id == "DSP014"
+
+
+def test_dsp007_inr_seller_protection(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP007: Item Not Received Seller Protection."""
+    result = runner.execute_oracle_check("DSP007")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP007"
+
+
+def test_dsp008_unauthorised_seller_protection(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP008: Unauthorised dispute shipment date check."""
+    result = runner.execute_oracle_check("DSP008")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP008"
+
+
+def test_dsp009_snad_seller_protection(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP009: SNAD prior refund and policy evaluation."""
+    result = runner.execute_oracle_check("DSP009")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP009"
+
 
 
