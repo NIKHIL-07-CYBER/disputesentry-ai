@@ -10,7 +10,7 @@
 | `S05` | Seller Protection Engine | `review-pass` | 2026-11-03 | `d43bffb` | Seller protection engine for INR (DSP007), Unauthorised (DSP008), and SNAD (DSP009) disputes | - |
 | `S06` | Economic Decision Engine | `review-pass` | 2026-11-03 | `3075c28` | EconomicEngine EV formula (DSP011), inquiry messaging permissions (DSP012), MetricsService recovery KPIs (DSP021) | - |
 | `S07` | Approval Gate & Fallbacks | `review-pass` | 2026-11-03 | `b5d5a40` | ApprovalGateService (DSP013), accept-claim concession executor (DSP015), DeadlineMonitorDaemon 2h fail-safe (DSP018), 18 new tests | - |
-| `S08` | Evidence Attachment Compiler | `implemented` | 2026-11-03 | `f9b848d` | EvidenceCompiler size limits (DSP016), magic bytes MIME verification (DSP017), multipart packaging, 18 new unit tests | - |
+| `S08` | Evidence Attachment Compiler | `review-pass` | 2026-11-03 | `f9b848d` | EvidenceCompiler size limits (DSP016), magic bytes MIME verification (DSP017), multipart packaging, 18 new unit tests | - |
 | `S09` | AI Reasoning & Shielding | `not-started` | - | - | DSP020 | - |
 | `S10` | Web API & Dashboard | `not-started` | - | - | Merchant UI | - |
 | `S11` | Hardening & Release | `not-started` | - | - | Docker, E2E validation | - |
