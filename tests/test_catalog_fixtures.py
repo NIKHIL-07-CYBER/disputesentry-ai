@@ -10,12 +10,14 @@ import aiosqlite
 import pytest
 import respx
 
+from app.clients.ai_client import AIReasoningClient
 from app.clients.paypal_client import (
     EvidenceValidationError,
     PayPalDisputesClient,
 )
 from app.domain.economics import EconomicEngine
-from app.domain.models import MerchantOrderRecord
+from app.domain.models import MerchantOrderRecord, RecommendedAction
+from app.domain.reasoning_shield import ReasoningShield
 from app.domain.seller_protection import SellerProtectionEngine
 from app.services.approval_gate import (
     DisputeAlreadyClosedError,
@@ -562,6 +564,69 @@ def dsp017_handler(
     )
 
 
+def dsp020_handler(
+    good: dict[str, Any], bad: dict[str, Any], expected: dict[str, Any]
+) -> FixtureResult:
+    """Domain oracle handler for DSP020: Neutralize prompt injection in customer claims."""
+    # 1. Evaluate good fixture
+    res_good = ReasoningShield.evaluate_fixture(good)
+    assert res_good["injection_detected"] is expected["good"]["injection_detected"]
+    assert (
+        res_good["recommendation_governed_by_evidence"]
+        is expected["good"]["recommendation_governed_by_evidence"]
+    )
+
+    client = AIReasoningClient()
+    dispute_data = {
+        "dispute_id": "PP-D-DSP020",
+        "reason": "MERCHANDISE_OR_SERVICE_NOT_RECEIVED",
+        "dispute_amount": {"currency": "USD", "value": 150.00},
+        "dispute_life_cycle_stage": "CHARGEBACK",
+    }
+    merchant_records = {
+        "order_id": "ORD-DSP020",
+        "carrier": "USPS",
+        "tracking_number": "9400100000000000000001",
+        "delivery_status": "DELIVERED",
+    }
+    decision_good = asyncio.run(
+        client.analyze_dispute(dispute_data, merchant_records, str(good["untrusted_buyer_text"]))
+    )
+    assert decision_good.customer_text_contains_injection is expected["good"]["injection_detected"]
+    assert (
+        decision_good.recommended_action == RecommendedAction.CONTEST
+    ) is expected["good"]["recommendation_governed_by_evidence"]
+
+    # 2. Evaluate bad fixture
+    res_bad = ReasoningShield.evaluate_fixture(bad)
+    assert res_bad["injection_detected"] is expected["bad"]["injection_detected"]
+    assert res_bad["system_compromised"] is expected["bad"]["system_compromised"]
+    assert (
+        res_bad["recommendation_governed_by_evidence"]
+        is expected["bad"]["recommendation_governed_by_evidence"]
+    )
+    assert (
+        res_bad["override_attempt_suppressed"]
+        is expected["bad"]["override_attempt_suppressed"]
+    )
+
+    decision_bad = asyncio.run(
+        client.analyze_dispute(dispute_data, merchant_records, str(bad["untrusted_buyer_text"]))
+    )
+    assert decision_bad.customer_text_contains_injection is expected["bad"]["injection_detected"]
+    assert (
+        decision_bad.recommended_action == RecommendedAction.CONTEST
+    ) is expected["bad"]["recommendation_governed_by_evidence"]
+    assert decision_bad.recommended_action != RecommendedAction.CONCEDE
+    assert "SYSTEM_COMPROMISED" not in decision_bad.justification
+
+    return FixturePassResult(
+        catalog_id="DSP020",
+        status="PASSED",
+        details="Customer prompt injection neutralized and evidence-governed adjudication verified",
+    )
+
+
 @pytest.fixture
 def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     """Fixture providing an initialized CatalogFixtureRunner instance."""
@@ -581,6 +646,7 @@ def runner(fixtures_dir: Path) -> CatalogFixtureRunner:
     instance.register_handler("DSP017", dsp017_handler)
     instance.register_handler("DSP018", dsp018_handler)
     instance.register_handler("DSP019", dsp019_handler)
+    instance.register_handler("DSP020", dsp020_handler)
     instance.register_handler("DSP021", dsp021_handler)
     instance.register_handler("DSP022", dsp022_handler)
     return instance
@@ -892,6 +958,14 @@ def test_dsp017_evidence_file_format_mime_types(runner: CatalogFixtureRunner) ->
     result = runner.execute_oracle_check("DSP017")
     assert result.status == "PASSED"
     assert result.catalog_id == "DSP017"
+
+
+def test_dsp020_prompt_injection_neutralization(runner: CatalogFixtureRunner) -> None:
+    """Explicit catalog oracle test for DSP020: Neutralize prompt injection in customer claims."""
+    result = runner.execute_oracle_check("DSP020")
+    assert result.status == "PASSED"
+    assert result.catalog_id == "DSP020"
+
 
 
 
