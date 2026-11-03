@@ -8,7 +8,7 @@
 | `S03` | Domain Models & Data Layer | `review-pass` | 2026-11-02 | `358a5e3` | Domain models, seeded SQLite orders, PCI DSS sanitizer, chained SHA-256 audit trail, 21 new tests | - |
 | `S04` | Walking Skeleton Sync | `review-pass` | 2026-11-02 | `a020999` | PayPalDisputesClient, HATEOAS link checks (DSP005), deadline urgency (DSP010), provide-evidence (DSP014), walking skeleton verified | - |
 | `S05` | Seller Protection Engine | `review-pass` | 2026-11-03 | `d43bffb` | Seller protection engine for INR (DSP007), Unauthorised (DSP008), and SNAD (DSP009) disputes | - |
-| `S06` | Economic Decision Engine | `implemented` | 2026-11-03 | `3075c28` | EconomicEngine EV formula (DSP011), inquiry messaging permissions (DSP012), MetricsService recovery KPIs (DSP021) | - |
+| `S06` | Economic Decision Engine | `review-pass` | 2026-11-03 | `3075c28` | EconomicEngine EV formula (DSP011), inquiry messaging permissions (DSP012), MetricsService recovery KPIs (DSP021) | - |
 | `S07` | Approval Gate & Fallbacks | `not-started` | - | - | DSP013, DSP015, DSP018 | - |
 | `S08` | Evidence Attachment Compiler | `not-started` | - | - | DSP016, DSP017 | - |
 | `S09` | AI Reasoning & Shielding | `not-started` | - | - | DSP020 | - |
