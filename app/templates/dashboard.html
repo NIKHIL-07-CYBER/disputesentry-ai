@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Priority Dispute Queue - DisputeSentry AI{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Top KPI Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Card 1: Total At Risk -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm hover:border-slate-700 transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total At Risk</span>
+                <span class="p-2 rounded-lg bg-amber-950/60 text-amber-400 text-lg">⚠️</span>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <div class="text-3xl font-extrabold text-white tracking-tight">
+                    ${{ "%.2f"|format(metrics.total_at_risk_usd|default(0.0)) }}
+                </div>
+                <span class="text-xs text-slate-400">active claims</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Pending Approvals -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm hover:border-slate-700 transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Pending Approvals</span>
+                <span class="p-2 rounded-lg bg-blue-950/60 text-blue-400 text-lg">👤</span>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <div class="text-3xl font-extrabold text-white tracking-tight">
+                    {{ metrics.pending_approvals_count|default(0) }}
+                </div>
+                <span class="text-xs text-amber-400 font-medium">Requires Gate Review</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Win Rate -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm hover:border-slate-700 transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Win Rate %</span>
+                <span class="p-2 rounded-lg bg-emerald-950/60 text-emerald-400 text-lg">🏆</span>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <div class="text-3xl font-extrabold text-emerald-400 tracking-tight">
+                    {{ "%.1f"|format((metrics.win_rate|default(0.0)) * 100) }}%
+                </div>
+                <span class="text-xs text-slate-400">historical</span>
+            </div>
+        </div>
+
+        <!-- Card 4: Net Recovery % -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm hover:border-slate-700 transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Net Recovery %</span>
+                <span class="p-2 rounded-lg bg-indigo-950/60 text-indigo-400 text-lg">📈</span>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between">
+                <div class="text-3xl font-extrabold text-indigo-400 tracking-tight">
+                    {{ "%.1f"|format((metrics.net_recovery_rate|default(0.0)) * 100) }}%
+                </div>
+                <span class="text-xs text-slate-400">${{ "%.2f"|format(metrics.total_saved_usd|default(0.0)) }} saved</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dispute Priority Queue Section -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="p-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                    <span>⚡</span> Priority Dispute Queue
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">
+                    Sorted by deadline urgency (<code class="text-blue-400 font-mono">hours_until_due ASC</code>) and amount (<code class="text-blue-400 font-mono">dispute_amount DESC</code>).
+                </p>
+            </div>
+            <div class="flex items-center space-x-3 text-xs">
+                <span class="text-slate-400">Total in Queue: <strong class="text-white">{{ disputes|length }}</strong></span>
+                <button type="button" onclick="window.location.reload()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors flex items-center gap-1.5">
+                    <span>🔄</span> Refresh
+                </button>
+            </div>
+        </div>
+
+        {% if disputes and disputes|length > 0 %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-800 text-left text-xs text-slate-300">
+                <thead class="bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold">
+                    <tr>
+                        <th scope="col" class="px-6 py-4">Dispute ID</th>
+                        <th scope="col" class="px-6 py-4">Amount</th>
+                        <th scope="col" class="px-6 py-4">Reason</th>
+                        <th scope="col" class="px-6 py-4">Response Due</th>
+                        <th scope="col" class="px-6 py-4">AI Recommendation</th>
+                        <th scope="col" class="px-6 py-4">Approval State</th>
+                        <th scope="col" class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80 font-normal">
+                    {% for dispute in disputes %}
+                    <tr class="hover:bg-slate-800/40 transition-colors" id="row-{{ dispute.dispute_id }}">
+                        <!-- Dispute ID & Customer Note snippet -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button type="button" onclick="openDisputeModal('{{ dispute.dispute_id }}')" class="font-mono font-semibold text-blue-400 hover:text-blue-300 hover:underline">
+                                {{ dispute.dispute_id }}
+                            </button>
+                            {% if dispute.customer_notes %}
+                            <div class="text-[11px] text-slate-500 max-w-xs truncate mt-0.5" title="{{ dispute.customer_notes }}">
+                                {{ dispute.customer_notes }}
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Amount -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-sm font-bold text-white">
+                                ${{ "%.2f"|format(dispute.dispute_amount.value) }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 uppercase block">{{ dispute.dispute_amount.currency }}</span>
+                        </td>
+
+                        <!-- Reason -->
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                                {{ dispute.reason.value }}
+                            </span>
+                        </td>
+
+                        <!-- Due Date / Urgency -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if dispute.hours_until_due <= 2.0 %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-950 text-red-400 border border-red-800 animate-pulse">
+                                <span>🚨</span> {{ "%.1f"|format(dispute.hours_until_due) }}h (CRITICAL)
+                            </span>
+                            {% elif dispute.hours_until_due <= 24.0 %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-950 text-amber-400 border border-amber-800">
+                                <span>⚠️</span> {{ "%.1f"|format(dispute.hours_until_due) }}h Left
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                                {{ "%.1f"|format(dispute.hours_until_due) }}h
+                            </span>
+                            {% endif %}
+                            <div class="text-[10px] text-slate-500 mt-0.5 font-mono">{{ dispute.seller_response_due_date }}</div>
+                        </td>
+
+                        <!-- AI Recommendation & Probability -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if dispute.recommended_action %}
+                                {% if dispute.recommended_action.value == 'CONTEST' %}
+                                <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-blue-950 text-blue-400 border border-blue-800">
+                                    CONTEST ({{ "%.0f"|format(dispute.win_probability * 100) }}%)
+                                </span>
+                                {% else %}
+                                <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-purple-950 text-purple-400 border border-purple-800">
+                                    CONCEDE
+                                </span>
+                                {% endif %}
+                                <div class="text-[10px] text-slate-400 mt-1">Exp: ${{ "%.2f"|format(dispute.expected_recovery) }}</div>
+                            {% else %}
+                            <span class="text-slate-500 italic">Pending AI</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Internal State -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if dispute.internal_state.value == 'PENDING_APPROVAL' %}
+                            <span id="badge-{{ dispute.dispute_id }}" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-950/80 text-amber-400 border border-amber-800">
+                                PENDING_APPROVAL
+                            </span>
+                            {% elif dispute.internal_state.value == 'AUTO_READY' %}
+                            <span id="badge-{{ dispute.dispute_id }}" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+                                AUTO_READY
+                            </span>
+                            {% elif dispute.internal_state.value == 'DISPATCHED' %}
+                            <span id="badge-{{ dispute.dispute_id }}" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-950/80 text-blue-400 border border-blue-800">
+                                DISPATCHED
+                            </span>
+                            {% else %}
+                            <span id="badge-{{ dispute.dispute_id }}" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                                {{ dispute.internal_state.value }}
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Action Controls -->
+                        <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                            <button type="button" onclick="openDisputeModal('{{ dispute.dispute_id }}')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium">
+                                Inspect
+                            </button>
+                            {% if dispute.internal_state.value == 'PENDING_APPROVAL' %}
+                            <button type="button" onclick="handleApprove('{{ dispute.dispute_id }}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium shadow-sm transition-colors">
+                                Approve
+                            </button>
+                            <button type="button" onclick="handleReject('{{ dispute.dispute_id }}')" class="px-2.5 py-1.5 rounded-lg bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-800 font-medium transition-colors">
+                                Reject
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <!-- Empty State Container -->
+        <div class="py-16 px-6 text-center" id="empty-state">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800/80 flex items-center justify-center text-3xl">
+                🛡️
+            </div>
+            <h3 class="text-base font-bold text-white">No active disputes pending</h3>
+            <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                All merchant disputes are resolved or automatically dispatched. Inbound webhook notifications will populate new cases automatically.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
